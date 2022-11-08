@@ -37,9 +37,9 @@ while True:
   mse_test=mean_squared_error(y_test, wregr.predict(x_test))
   score_test=r2_score(y_test,wregr.predict(x_test))
   score_train=r2_score(y_train,wregr.predict(x_train))
-  i=i+1
   if p<0.05 and score_test>0 and score_cv>0:
     break
+  i=i+1
 print('R2 CV (wregr): ',100 * score_cv," %")
 print('RMSE CV (wregr): ',np.sqrt(mse_cv))
 print('R2 calibration: ',100 * score_train," %")
@@ -50,9 +50,9 @@ print("Best random state : ",i)
 s=0
 cumperc=[]
 for j in [abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_]:
-  s=s+i
+  s=s+j
   cumperc.append(s)
-perc_coefs=DataFrame({'idx':results['PC'].columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_],'cum':cumperc}).sort_values(by=['val'])
+perc_coefs=DataFrame({'idx':results['PC'].columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_],'cum':cumperc}).sort_values(by=['cum'])
 bar(perc_coefs['idx'],perc_coefs['cum'])
 axhline(y=0.8,linewidth=1, color='red')
 show()
