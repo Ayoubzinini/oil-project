@@ -47,7 +47,12 @@ print('RMSE calibration: ',np.sqrt(mse_train))
 print('R2 test: ',100 * score_test," %")
 print('RMSE test: ',np.sqrt(mse_test))
 print("Best random state : ",i)
-perc_coefs=DataFrame({'idx':results['PC'].columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_]}).sort_values(by=['val'])
-bar(perc_coefs['idx'],perc_coefs['val'])
+s=0
+cumperc=[]
+for j in [abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_]:
+  s=s+i
+  cumperc.append(s)
+perc_coefs=DataFrame({'idx':results['PC'].columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_],'cum':cumperc}).sort_values(by=['val'])
+bar(perc_coefs['idx'],perc_coefs['cum'])
 axhline(y=0.8,linewidth=1, color='red')
 show()
