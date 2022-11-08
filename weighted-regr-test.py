@@ -4,13 +4,14 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, max_error, r2_score, mean_absolute_error
 from sklearn.model_selection import train_test_split, cross_val_score
 import seaborn as sns
-from matplotlib.pyplot import show, bar, axhline
+from matplotlib.pyplot import show, bar, axhline, rcParams
 from pandas import read_csv, read_excel
 import matplotlib.pyplot as plt
 from pandas import DataFrame, concat
 import numpy as np
 from scipy.stats import f_oneway
 from pca import pca
+rcParams['figure.figsize'] = (12, 8)
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
@@ -21,7 +22,8 @@ r=DataFrame({"one":np.ones(X.shape[1])})
 for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
-i=0
+#9897,11583,38385
+i=38386
 while True:
   model = pca(n_components=20)
   results = model.fit_transform(X)
@@ -49,10 +51,11 @@ print('RMSE test: ',np.sqrt(mse_test))
 print("Best random state : ",i)
 s=0
 cumperc=[]
-for j in [abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_]:
+perc_coefs=DataFrame({'idx':results['PC'].columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_],'cum':range(len(results['PC'].columns))}).sort_values(by=['val'])
+for j in perc_coefs.val:
   s=s+j
   cumperc.append(s)
-perc_coefs=DataFrame({'idx':results['PC'].columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_],'cum':cumperc}).sort_values(by=['cum'])
+perc_coefs.cum=cumperc
 bar(perc_coefs['idx'],perc_coefs['cum'])
 axhline(y=0.8,linewidth=1, color='red')
 show()
