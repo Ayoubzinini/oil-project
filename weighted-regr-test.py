@@ -22,8 +22,8 @@ r=DataFrame({"one":np.ones(X.shape[1])})
 for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
-#9897,11583,38385
-i=38386
+#9897,11583,38385,44839
+i=44839
 while True:
   model = pca(n_components=20)
   results = model.fit_transform(X)
