@@ -23,7 +23,7 @@ for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
 #9897,11583,38385,44839
-i=62984
+i=44839
 while True:
   model = pca(n_components=20)
   results = model.fit_transform(X)
@@ -31,7 +31,7 @@ while True:
   income_groups=[y_train,y_test]
   s,p=f_oneway(*income_groups)
   lassoregr=Lasso(alpha=0)
-  #lassoregr=LassoCV(alphas=np.arange(0, 1.01, 0.01), cv=LeaveOneOut())
+  #lassoregr=LassoCV(alphas=np.arange(0, 1.001, 0.001), cv=LeaveOneOut())
   lassoregr.fit(x_train, y_train, np.ones(x_train.shape[0])/np.mean(x_train,axis=1)**2)
   Y_cv = cross_val_predict(lassoregr, x_train, y_train, cv=LeaveOneOut())
   score_cv = r2_score(y_train, Y_cv)
