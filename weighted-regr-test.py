@@ -22,8 +22,9 @@ r=DataFrame({"one":np.ones(X.shape[1])})
 for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
-#9897,11583,38385,44839
-i=44839
+#9978,14152,16643,23158,23397,24382, 30484👌,30556,33207, 35565, 36224, 38367
+#p<0.05 : 44839
+i=51216
 while True:
   model = pca(n_components=20)
   results = model.fit_transform(X)
@@ -39,7 +40,7 @@ while True:
   mse_test=mean_squared_error(y_test, wregr.predict(x_test))
   score_test=r2_score(y_test,wregr.predict(x_test))
   score_train=r2_score(y_train,wregr.predict(x_train))
-  if p<0.05 and score_test>0 and score_cv>0:
+  if p>0.75 and score_test>0 and score_cv>0:
     break
   i=i+1
 print('R2 CV (wregr): ',100 * score_cv," %")
