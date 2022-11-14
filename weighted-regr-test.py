@@ -41,7 +41,7 @@ while True:
   mse_test=mean_squared_error(y_test, wregr.predict(x_test))
   score_test=r2_score(y_test,wregr.predict(x_test))
   score_train=r2_score(y_train,wregr.predict(x_train))
-  if p<0.05 and score_test>0 and score_cv>0:
+  if p>0.05 and score_test>0 and score_cv>0:
     break
   i=i+1
 print('R2 CV (wregr): ',100 * score_cv," %")
