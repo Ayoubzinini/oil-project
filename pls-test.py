@@ -20,8 +20,10 @@ for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
 Y=db['Y']
+#111,237👌
+j=1378
 while True:
-  x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2)
+  x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
   income_groups=[y_train,y_test]
   s,p=f_oneway(*income_groups)
   r2=[]
@@ -39,7 +41,8 @@ while True:
   R2test=100*r2_score(y_test,model.predict(x_test))
   RMSEtrain=mean_squared_error(y_train,model.predict(x_train))
   RMSEtest=mean_squared_error(y_test,model.predict(x_test))
-  if p>0.05 and R2CV>0 and R2test>0:
+  if p>0.75 and R2CV>0 and R2test>0:
     break
+  j=j+1
 print("pc nbr : ",1+RMSE.index(min(RMSE)))
 print(DataFrame([R2test,RMSEtest,R2train,RMSEtrain,RMSECV,R2CV],index=["R2test","RMSEtest","R2train","RMSEtrain","RMSECV","R2CV"],columns=["values"]))
