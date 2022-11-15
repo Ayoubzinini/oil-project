@@ -20,11 +20,14 @@ for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
 Y=db['Y']
-Y=Y**3
+"""
 for i in X.columns:
     X[i]=X[i]*np.ones(X.shape[0])/np.mean(X,axis=1)**2
+"""
+rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
+r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[],[],[],[]
 #111,237👌
-j=0
+j=237
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
   income_groups=[y_train,y_test]
@@ -45,7 +48,17 @@ while True:
   RMSEtrain=mean_squared_error(y_train,model.predict(x_train))
   RMSEtest=mean_squared_error(y_test,model.predict(x_test))
   if p>0.05 and R2CV>0 and R2test>0:
-    break
+      r2c.append(R2train)
+      r2cv.append(R2CV)
+      r2t.append(R2test)
+      rmsec.append(RMSEtrain)
+      rmsecv.append(RMSECV)
+      rmset.append(RMSEtest)
+      rds.append(j)
+      res=DataFrame({rescols[0]:r2c,rescols[1]:r2cv,rescols[2]:r2t,rescols[3]:rmsec,rescols[4]:rmsecv,rescols[5]:rmset,rescols[6]:rds})
+      if res.shape[0]==100:
+          res.to_excel("res.xlsx")
+          break
   j=j+1
 print("pc nbr : ",1+RMSE.index(min(RMSE)))
 print(DataFrame([R2test,RMSEtest,R2train,RMSEtrain,RMSECV,R2CV],index=["R2test","RMSEtest","R2train","RMSEtrain","RMSECV","R2CV"],columns=["values"]))
