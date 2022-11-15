@@ -20,8 +20,11 @@ for i in X.index:
   r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
 X=r.T.drop("one",axis=0)
 Y=db['Y']
+Y=Y**3
+for i in X.columns:
+    X[i]=X[i]*np.ones(X.shape[0])/np.mean(X,axis=1)**2
 #111,237👌
-j=1378
+j=0
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
   income_groups=[y_train,y_test]
@@ -31,7 +34,7 @@ while True:
   for i in range(1,31,1):
     model=PLSRegression(n_components=i)
     model.fit(x_train, y_train)
-    r2.append(model.score(x_test,y_test))
+    r2.append(r2_score(model.predict(x_test),y_test))
     RMSE.append(mean_squared_error(model.predict(x_test),y_test))
   model=PLSRegression(n_components=1+RMSE.index(min(RMSE)))
   model.fit(x_train, y_train)
@@ -41,7 +44,7 @@ while True:
   R2test=100*r2_score(y_test,model.predict(x_test))
   RMSEtrain=mean_squared_error(y_train,model.predict(x_train))
   RMSEtest=mean_squared_error(y_test,model.predict(x_test))
-  if p>0.75 and R2CV>0 and R2test>0:
+  if p>0.05 and R2CV>0 and R2test>0:
     break
   j=j+1
 print("pc nbr : ",1+RMSE.index(min(RMSE)))
