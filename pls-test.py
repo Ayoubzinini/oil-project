@@ -25,9 +25,9 @@ for i in X.columns:
     X[i]=X[i]*np.ones(X.shape[0])/np.mean(X,axis=1)**2
 """
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
-r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[],[],[],[]
+r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #111,237👌
-j=237
+j=0
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
   income_groups=[y_train,y_test]
