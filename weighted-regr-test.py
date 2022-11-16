@@ -49,7 +49,7 @@ while True:
       rmsec.append(np.sqrt(mse_train))
       rmsecv.append(np.sqrt(mse_cv))
       rmset.append(np.sqrt(mse_test))
-      rds.append(j)
+      rds.append(i)
       res=DataFrame({rescols[0]:r2c,rescols[1]:r2cv,rescols[2]:r2t,rescols[3]:rmsec,rescols[4]:rmsecv,rescols[5]:rmset,rescols[6]:rds})
       if res.shape[0]==100:
           res.to_excel("res.xlsx")
