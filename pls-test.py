@@ -8,6 +8,27 @@ import matplotlib.pyplot as plt
 from pandas import DataFrame, concat
 import numpy as np
 from scipy.stats import f_oneway
+def ic_pr(x,y,model):
+  from numpy import mean,sqrt,array,std,transpose,matmul,linalg
+  from sklearn.metrics import mean_squared_error
+  from scipy.stats import t
+  n=x.shape[0]
+  ich,ici=[],[]
+  for i,j in zip(x.index,y):
+      xh=x.loc[i,:]
+      xh=[list(xh)]
+      pr=model.predict(xh)[0]
+      mse=mean_squared_error([j],[pr])
+      xh=x.loc[i,:]
+      xm=mean(xh)
+      stderr=sqrt(abs(mse*matmul(matmul(transpose(xh),linalg.inv(matmul(transpose(x),x))),xh)))
+      #"""
+      T=t(df=n-2).ppf(0.975)
+      a=T*stderr
+      ici.append(pr-a)
+      ich.append(pr+a)
+      #"""
+  return DataFrame({'ICI':ici,'ICH':ich})
 def simple_moving_average(signal, window=5):
     return np.convolve(signal, np.ones(window)/window, mode='same')
 file_name=input('File Name : ')
@@ -27,7 +48,7 @@ for i in X.columns:
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #111,237👌
-j=0
+j=237
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
   income_groups=[y_train,y_test]
@@ -48,6 +69,7 @@ while True:
   RMSEtrain=mean_squared_error(y_train,model.predict(x_train))
   RMSEtest=mean_squared_error(y_test,model.predict(x_test))
   if p>0.05 and R2CV>0 and R2test>0:
+      """
       r2c.append(R2train)
       r2cv.append(R2CV)
       r2t.append(R2test)
@@ -59,6 +81,9 @@ while True:
       if res.shape[0]==100:
           res.to_excel("res.xlsx")
           break
+      #"""
+      break
   j=j+1
+print(ic_pr(x_test, y_test, model))#.to_excel('icpr.xlsx')
 print("pc nbr : ",1+RMSE.index(min(RMSE)))
 print(DataFrame([R2test,RMSEtest,R2train,RMSEtrain,RMSECV,R2CV],index=["R2test","RMSEtest","R2train","RMSEtrain","RMSECV","R2CV"],columns=["values"]))

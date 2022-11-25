@@ -4,7 +4,7 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, max_error, r2_score, mean_absolute_error
 from sklearn.model_selection import train_test_split, cross_val_score
 import seaborn as sns
-from matplotlib.pyplot import show, bar, axhline, rcParams
+from matplotlib.pyplot import plot, show, bar, axhline, rcParams, legend
 from pandas import read_csv, read_excel
 import matplotlib.pyplot as plt
 from pandas import DataFrame, concat
@@ -16,6 +16,27 @@ file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
 Y=db['Y']
+def ic_pr(x,y,model):
+  from numpy import mean,sqrt,array,std,transpose,matmul,linalg
+  from sklearn.metrics import mean_squared_error
+  from scipy.stats import t
+  n=x.shape[0]
+  ich,ici=[],[]
+  for i,j in zip(x.index,y):
+      xh=x.loc[i,:]
+      xh=[list(xh)]
+      pr=model.predict(xh)[0]
+      mse=mean_squared_error([j],[pr])
+      xh=x.loc[i,:]
+      xm=mean(xh)
+      stderr=std(y-pr)*sqrt(abs(matmul(matmul(transpose(xh),linalg.inv(matmul(transpose(x),x))),xh)))
+      #"""
+      T=t(df=n-2).ppf(0.975)
+      a=T*stderr
+      ici.append(pr-a)
+      ich.append(pr+a)
+      #"""
+  return DataFrame({'ICI':ici,'ICH':ich})
 def simple_moving_average(signal, window=5):
     return np.convolve(signal, np.ones(window)/window, mode='same')
 r=DataFrame({"one":np.ones(X.shape[1])})
@@ -27,7 +48,7 @@ X=r.T.drop("one",axis=0)
 #78686
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
-i=4113
+i=2879
 while True:
   pc = PCA(X, ncomp=20, method='nipals')
   x_train, x_test, y_train, y_test = train_test_split(DataFrame(pc.factors),Y,test_size=0.2,random_state=i)
@@ -43,6 +64,7 @@ while True:
   score_test=r2_score(y_test,wregr.predict(x_test))
   score_train=r2_score(y_train,wregr.predict(x_train))
   if p>0.05 and score_test>0 and score_cv>0:
+      """
       r2c.append(score_train)
       r2cv.append(score_cv)
       r2t.append(score_test)
@@ -54,6 +76,8 @@ while True:
       if res.shape[0]==100:
           res.to_excel("res.xlsx")
           break
+      #"""
+      break
   i=i+1
 print('R2 CV (wregr): ',100 * score_cv," %")
 print('RMSE CV (wregr): ',np.sqrt(mse_cv))
@@ -62,6 +86,12 @@ print('RMSE calibration: ',np.sqrt(mse_train))
 print('R2 test: ',100 * score_test," %")
 print('RMSE test: ',np.sqrt(mse_test))
 print("Best random state : ",i)
+plot(wregr.predict(x_test),'-b',label='pred')
+plot(ic_pr(x_test, y_test, wregr)['ICI'],'-g',label='IC inf')
+plot(ic_pr(x_test, y_test, wregr)['ICH'],'-r',label='IC sup')
+legend(loc='best')
+show()
+"""
 s=0
 cumperc=[]
 perc_coefs=DataFrame({'idx':DataFrame(pc.factors).columns,'val':[abs(i)/np.sum(abs(wregr.coef_)) for i in wregr.coef_],'cum':range(len(DataFrame(pc.factors).columns))}).sort_values(by=['val'])
@@ -72,3 +102,4 @@ perc_coefs.cum=cumperc
 bar(perc_coefs['idx'],perc_coefs['cum'])
 axhline(y=0.8,linewidth=1, color='red')
 show()
+#"""

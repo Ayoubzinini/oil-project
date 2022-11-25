@@ -21,7 +21,7 @@ for i in X.index:
 X=r.T.drop("one",axis=0)
 #pond 1/m : 9897,11583,38385,44839
 #pond [0.001]*23 : 37, 1058, 1195, 2370, 3222, 3286, 3410, 4044
-i=6640 #last stop poly : 44839 
+i=0 #last stop poly : 44839 
 while True:
   model = pca(n_components=20)
   results = model.fit_transform(X)
