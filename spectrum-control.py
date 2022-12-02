@@ -21,7 +21,7 @@ for i in X.index:
 show()
 #"""
 #"""
-C=['fb8500','bc6c25','e63946','dda15e','ffb703','ffafcc','606c38','cdb4db','ffafcc','ccd5ae','ff006e','7209b7','c1121f','b5e48c','6a040f','9d0208','40916c','da2c38','00f5d4','8f2d56','8ac926','c9184a','ff4d6d','f4f3ee','bcb8b1','8a817c']
+C=['fb8500','bc6c25','e63946','dda15e','ffb703','ffafcc','606c38','cdb4db','ffafcc','ccd5ae','ff006e','7209b7','c1121f','b5e48c','6a040f','9d0208','40916c','da2c38','00f5d4','8f2d56','8ac926','c9184a','ff4d6d','a7c957','006d77','8a817c','d90429','7209b7','6f1d1b']
 X=d1.drop(['Unnamed: 0','Y'],axis=1)
 X.index=d1['Unnamed: 0']
 rcParams['figure.figsize'] = (12, 8)
