@@ -2,12 +2,15 @@ from sklearn.model_selection import KFold,cross_val_predict, LeaveOneOut
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, max_error, r2_score, mean_absolute_error
 from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import normalize
 import seaborn as sns
 from pandas import read_csv, read_excel
 import matplotlib.pyplot as plt
 from pandas import DataFrame, concat
 import numpy as np
 from scipy.stats import f_oneway
+from scipy.signal import savgol_filter, detrend
+from preproc_NIR import osc, msc, snv, simple_moving_average
 def ic_pr(x,y,model):
   from numpy import mean,sqrt,array,std,transpose,matmul,linalg
   from sklearn.metrics import mean_squared_error
@@ -29,18 +32,13 @@ def ic_pr(x,y,model):
       ich.append(pr+a)
       #"""
   return DataFrame({'ICI':ici,'ICH':ich})
-def simple_moving_average(signal, window=5):
-    return np.convolve(signal, np.ones(window)/window, mode='same')
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
-#X=X[X.columns[range(624,1024)]]
-X.index=[str(i) for i in X.index]
-r=DataFrame({"one":np.ones(X.shape[1])})
-for i in X.index:
-  r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
-X=r.T.drop("one",axis=0)
 Y=db['Y']
+Y=np.sqrt(Y)
+X=osc(X)
+#X=DataFrame(detrend(DataFrame(detrend(DataFrame(savgol_filter(X,polyorder=1,window_length=5))))))
 """
 for i in X.columns:
     X[i]=X[i]*np.ones(X.shape[0])/np.mean(X,axis=1)**2
@@ -48,7 +46,7 @@ for i in X.columns:
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #111,237👌
-j=237
+j=0
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
   income_groups=[y_train,y_test]
@@ -86,4 +84,5 @@ while True:
   j=j+1
 print(ic_pr(x_test, y_test, model))#.to_excel('icpr.xlsx')
 print("pc nbr : ",1+RMSE.index(min(RMSE)))
+print('Best random stat : ',j)
 print(DataFrame([R2test,RMSEtest,R2train,RMSEtrain,RMSECV,R2CV],index=["R2test","RMSEtest","R2train","RMSEtrain","RMSECV","R2CV"],columns=["values"]))

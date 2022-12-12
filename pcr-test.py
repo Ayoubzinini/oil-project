@@ -13,35 +13,14 @@ from pandas.core.groupby.groupby import DataFrame
 import numpy as np
 from scipy.stats import f_oneway
 from pca import pca
-def msc(input_data, reference=None):
-    for i in range(input_data.shape[0]):
-        input_data[i,:] -= input_data[i,:].mean()
-    if reference is None:
-        ref = np.mean(input_data, axis=0)
-    else:
-        ref = reference
-    data_msc = np.zeros_like(input_data)
-    for i in range(input_data.shape[0]):
-        fit = np.polyfit(ref, input_data[i,:], 1, full=True)
-        data_msc[i,:] = (input_data[i,:] - fit[0][1]) / fit[0][0]
-    return (data_msc, ref)
-def snv(input_data):
-    output_data = np.zeros_like(input_data)
-    for i in range(input_data.shape[0]):
-        output_data[i,:] = (input_data[i,:] - np.mean(input_data[i,:])) / np.std(input_data[i,:])
-    return output_data
-def simple_moving_average(signal, window=5):
-    return np.convolve(signal, np.ones(window)/window, mode='same')
+from preproc_NIR import simple_moving_average, snv, msc, osc
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
+X=osc(X)
 #X=X[X.columns[range(624,1024)]]
 Y=db['Y']
 while True:
-  r=DataFrame({"one":np.ones(X.shape[1])})
-  for i in X.index:
-    r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
-  X=r.T.drop("one",axis=0)
   model = pca(n_components=20)
   results = model.fit_transform(X)
   x_train, x_test, y_train, y_test = train_test_split(results['PC'],db['Y'],test_size=0.2)
