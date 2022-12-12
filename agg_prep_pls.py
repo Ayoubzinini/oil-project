@@ -40,7 +40,8 @@ Y=np.sqrt(Y)
 
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
-for p_X in [osc(X),snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),simple_moving_average(X),savgol_filter(X,5,1,1),normalize(X,axis=1),centring(X)]:
+#osc(X),simple_moving_average(X,window=1),centring(X)
+for p_X in [snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),savgol_filter(X,3,1,1),normalize(X,axis=1)]:
     p_X=DataFrame(p_X)
     j=0
     while True:
@@ -74,4 +75,4 @@ for p_X in [osc(X),snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),simple_mo
         j=j+1
 res=DataFrame({rescols[0]:r2c,rescols[1]:r2cv,rescols[2]:r2t,rescols[3]:rmsec,rescols[4]:rmsecv,rescols[5]:rmset,rescols[6]:rds})
 print(res)
-print(np.mean(res,axis=1))
+print(np.mean(res,axis=0))
