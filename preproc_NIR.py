@@ -59,3 +59,26 @@ def prep_log(X):
   for i in X.columns:
     lg_X[i]=log10(1/X[i])
   return lg_X
+def devise_bande(X,n_intervals):
+  Test=int(len(X.columns)/n_intervals)-(len(X.columns)/n_intervals)
+  if Test>0:
+    n_elements=2+int(len(X.columns)/n_intervals)
+  elif Test<=0:
+    n_elements=1+int(len(X.columns)/n_intervals)
+  stop_vals=[]
+  i=0
+  while True:
+    try:
+      stop_vals.append(X.columns[i])
+    except IndexError:
+      stop_vals.append(X.columns[len(X.columns)-1])
+      break
+    i=i+n_elements
+  stop_vals_=stop_vals[1:len(stop_vals)]
+  intervals = [i for i in zip(stop_vals,stop_vals_)]
+  x,y=[],[]
+  for i in intervals:
+    x.append(list(X.columns).index(i[0]))
+    y.append(list(X.columns).index(i[1])+1)
+  final_interval=[i for i in zip(x,y)]
+  return final_interval

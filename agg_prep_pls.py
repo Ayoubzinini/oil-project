@@ -41,7 +41,7 @@ Y=np.sqrt(Y)
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #osc(X),simple_moving_average(X,window=1),centring(X)
-for p_X in [snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),savgol_filter(X,3,1,1),normalize(X,axis=1)]:
+for p_X in [snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),savgol_filter(X,3,1,1),normalize(X,axis=1),savgol_filter(DataFrame(msc(X.iloc[:,:-1].values)),9,1,1)]:
     p_X=DataFrame(p_X)
     j=0
     while True:
