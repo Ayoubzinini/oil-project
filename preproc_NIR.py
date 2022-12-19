@@ -53,11 +53,11 @@ def centring(X):
     Xc[i]=X[i]-mean(X[i])
   return Xc
 def prep_log(X):
-  from numpy import log10
+  from math import log10
   from pandas import DataFrame
   lg_X=DataFrame()
   for i in X.columns:
-    lg_X[i]=log10(1/X[i])
+    lg_X[i]=[log10(1/j) for j in X[i]]
   return lg_X
 def devise_bande(X,n_intervals):
   Test=int(len(X.columns)/n_intervals)-(len(X.columns)/n_intervals)
@@ -82,3 +82,5 @@ def devise_bande(X,n_intervals):
     y.append(list(X.columns).index(i[1])+1)
   final_interval=[i for i in zip(x,y)]
   return final_interval
+def var_sel(X):
+  return X[list(X.columns[79:159])+list(X.columns[553:1024])]

@@ -10,7 +10,7 @@ from pandas import DataFrame, concat
 import numpy as np
 from scipy.stats import f_oneway
 from scipy.signal import savgol_filter, detrend
-from preproc_NIR import osc, msc, snv, simple_moving_average, centring, prep_log
+from preproc_NIR import osc, msc, snv, simple_moving_average, centring, var_sel
 def ic_pr(x,y,model):
   from numpy import mean,sqrt,array,std,transpose,matmul,linalg
   from sklearn.metrics import mean_squared_error

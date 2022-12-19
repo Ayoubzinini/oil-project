@@ -1,8 +1,8 @@
 from pandas import read_excel, DataFrame
 from matplotlib.pyplot import plot, show, rcParams, legend
 from numpy import nan
-d1=read_excel('data-oil-2miroirs.xlsx')
-d2=read_excel('data-oil-12+31janv.xlsx')
+path=input('File name : ')
+d1=read_excel(path+'.xlsx')
 #"""
 #"""
 mc=input('wm or nm : ')
