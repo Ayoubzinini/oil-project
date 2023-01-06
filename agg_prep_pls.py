@@ -5,12 +5,12 @@ from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import normalize, StandardScaler
 import seaborn as sns
 from pandas import read_csv, read_excel
-import matplotlib.pyplot as plt
+from matplotlib.pyplot import plot, show, xlabel, ylabel, title
 from pandas import DataFrame, concat
 import numpy as np
-from scipy.stats import f_oneway
+from scipy.stats import f_oneway, shapiro
 from scipy.signal import savgol_filter, detrend
-from preproc_NIR import osc, msc, snv, simple_moving_average, centring, var_sel
+from preproc_NIR import osc, msc, snv, simple_moving_average, centring, var_sel, pow_trans
 def ic_pr(x,y,model):
   from numpy import mean,sqrt,array,std,transpose,matmul,linalg
   from sklearn.metrics import mean_squared_error
@@ -37,11 +37,13 @@ db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
 Y=db['Y']
 Y=np.sqrt(Y)
-
+#Y=pow_trans(Y,1.5)
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #osc(X),simple_moving_average(X,window=1),centring(X)
-for p_X in [snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),savgol_filter(X,3,1,1),normalize(X,axis=1),savgol_filter(DataFrame(msc(X.iloc[:,:-1].values)),9,1,1)]:
+#,normalize(X,axis=1),savgol_filter(DataFrame(msc(X.iloc[:,:-1].values)),9,1,1)
+#snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),
+for p_X in [savgol_filter(X,3,1,1)]:
     p_X=DataFrame(p_X)
     j=0
     while True:
@@ -76,3 +78,13 @@ for p_X in [snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),savgol_filter(X,
 res=DataFrame({rescols[0]:r2c,rescols[1]:r2cv,rescols[2]:r2t,rescols[3]:rmsec,rescols[4]:rmsecv,rescols[5]:rmset,rescols[6]:rds})
 print(res)
 print(np.mean(res,axis=0))
+w,p = shapiro([i-j for i,j in zip(y_test,model.predict(x_test))])
+if p>0.05:
+  desicion="Normal"
+elif p<0.05:
+  desicion="Not Normal"
+print('Quantile shapiro : {}\npropability shapiro : {}\ndesicion : {}'.format(w,p,desicion))
+plot(cross_val_predict(model, x_train, y_train, cv=LeaveOneOut()),[i-j for i,j in zip(y_train,cross_val_predict(model, x_train, y_train, cv=LeaveOneOut()))],'.')
+xlabel('y pr')
+ylabel('e')
+show()

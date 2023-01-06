@@ -84,3 +84,18 @@ def devise_bande(X,n_intervals):
   return final_interval
 def var_sel(X):
   return X[list(X.columns[79:159])+list(X.columns[553:1024])]
+def pow_trans(y,power_t):
+  from numpy import log
+  def gm(l):
+    result=1
+    for i in l:
+      result *= i
+    return result**1/len(l)
+  trans_y=[]
+  if power_t==0:
+    for i in y:
+      trans_y.append(gm(y)*log(i))
+  else:
+    for i in y:
+      trans_y.append((i**(power_t-1))/(power_t*gm(y)**(power_t-1)))
+  return trans_y

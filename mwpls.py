@@ -1,4 +1,4 @@
-from preproc_NIR import devise_bande, snv
+from preproc_NIR import devise_bande, msc, pow_trans
 from sklearn.preprocessing import normalize, StandardScaler
 from sklearn.model_selection import KFold,cross_val_predict, LeaveOneOut
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, max_error, r2_score, mean_absolute_error
@@ -18,7 +18,8 @@ max_i=[]
 print(devise_bande(X,13))
 for i in devise_bande(X,13):
   inp=X.drop(list(X.columns[i[0]:i[1]]),axis=1)
-  inp=DataFrame(snv(inp.iloc[:,:-1].values))
+  inp=savgol_filter(X,3,1,1)
+  Y=sqrt(Y)
   j=0
   while True:
     x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
