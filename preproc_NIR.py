@@ -82,8 +82,14 @@ def devise_bande(X,n_intervals):
     y.append(list(X.columns).index(i[1])+1)
   final_interval=[i for i in zip(x,y)]
   return final_interval
-def var_sel(X):
-  return X[list(X.columns[79:159])+list(X.columns[553:1024])]
+def var_sel(X,min_max_intervals_list):
+  selected=[]
+  for i in min_max_intervals_list:
+    for j in X.columns:
+      j=float(j)
+      if j>=i[0] and j<=i[1]:
+        selected.append(j)
+  return X[selected]
 def pow_trans(y,power_t):
   from numpy import log
   def gm(l):

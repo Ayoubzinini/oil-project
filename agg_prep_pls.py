@@ -35,6 +35,7 @@ def ic_pr(x,y,model):
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
+X=X.drop(list(X.columns[0:79])+list(X.columns[795:811]),axis=1)#
 Y=db['Y']
 Y=np.sqrt(Y)
 #Y=pow_trans(Y,1.5)
@@ -43,9 +44,9 @@ r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #osc(X),simple_moving_average(X,window=1),centring(X)
 #,normalize(X,axis=1),savgol_filter(DataFrame(msc(X.iloc[:,:-1].values)),9,1,1)
 #snv(X.iloc[:,:-1].values),msc(X.iloc[:,:-1].values),
-for p_X in [savgol_filter(X,3,1,1)]:
+for p_X in [savgol_filter(DataFrame(msc(X.iloc[:,:-1].values)),13,1,1)]:
     p_X=DataFrame(p_X)
-    j=0
+    j=1
     while True:
         x_train, x_test, y_train, y_test = train_test_split(p_X,Y,test_size=0.2,random_state=j)
         income_groups=[y_train,y_test]
@@ -65,7 +66,7 @@ for p_X in [savgol_filter(X,3,1,1)]:
         R2test=100*r2_score(y_test,model.predict(x_test))
         RMSEtrain=mean_squared_error(y_train,model.predict(x_train))
         RMSEtest=mean_squared_error(y_test,model.predict(x_test))
-        if p>0.05 and R2CV>0 and R2test>0:
+        if R2CV>0 and R2test>0:
             r2c.append(R2train)
             r2cv.append(R2CV)
             r2t.append(R2test)
@@ -83,6 +84,10 @@ if p>0.05:
   desicion="Normal"
 elif p<0.05:
   desicion="Not Normal"
+coefs=[i[0] for i in model.coef_]
+coefs.append((np.mean(y_train) - np.dot(np.mean(x_train),model.coef_)))
+DataFrame({'C':coefs}).to_json("coefs_model_oil.json")
+DataFrame(x_train).to_excel("Calibration_Data_oil.xlsx")
 print('Quantile shapiro : {}\npropability shapiro : {}\ndesicion : {}'.format(w,p,desicion))
 plot(cross_val_predict(model, x_train, y_train, cv=LeaveOneOut()),[i-j for i,j in zip(y_train,cross_val_predict(model, x_train, y_train, cv=LeaveOneOut()))],'.')
 xlabel('y pr')
