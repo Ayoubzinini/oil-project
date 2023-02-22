@@ -66,7 +66,7 @@ while True:
   R2test=100*r2_score(y_test,model.predict(x_test))
   RMSEtrain=mean_squared_error(y_train,model.predict(x_train))
   RMSEtest=mean_squared_error(y_test,model.predict(x_test))
-  if p>0.05 and R2CV>0 and R2test>0:
+  if R2CV>0 and R2test>0:
       """
       r2c.append(R2train)
       r2cv.append(R2CV)

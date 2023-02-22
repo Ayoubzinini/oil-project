@@ -14,6 +14,7 @@ db=read_excel("data-oil-2miroirs.xlsx")
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 X=DataFrame(savgol_filter(X,3,1,1))
 Y=db['Y']
+Y=[np.sqrt(i) for i in Y]
 """
 msecv=[]
 r2cv=[]
@@ -33,7 +34,7 @@ best_msecv=mean_squared_error(y_train,ycv)
 best_r2cv=r2_score(y_train,ycv)
 best_r2c=r2_score(y_train,pls.predict(x_train))
 best_r2t=r2_score(y_test,pls.predict(x_test))
-bands=devise_bande(X,13)
+bands=devise_bande(X,69)
 while True:
   try:
       for i in bands:
@@ -42,7 +43,7 @@ while True:
         program_starts = time.time()
         while True:
           x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
-          pls=PLSRegression()
+          pls=PLSRegression(n_components=23)
           pls.fit(x_train,y_train)
           ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
           now = time.time()
@@ -52,13 +53,13 @@ while True:
           if run_time>60:
               break
           j+=1
-        if r2_score(y_train,pls.predict(x_train))>best_r2c and r2_score(y_test,pls.predict(x_test))>best_r2t and r2_score(y_pred=ycv,y_true=y_train)>best_r2cv:
+        if r2_score(y_train,pls.predict(x_train))>=best_r2c and r2_score(y_test,pls.predict(x_test))>=best_r2t and r2_score(y_pred=ycv,y_true=y_train)>=best_r2cv:
           best_r2cv=r2_score(y_pred=ycv,y_true=y_train)
           best_r2c=r2_score(y_train,pls.predict(x_train))
           best_r2t=r2_score(y_test,pls.predict(x_test))
           best_i=i
-          X=X.drop(list(X.columns[best_i[0]:best_i[1]]),axis=1)
-          bands.remove(best_i)
+      X=X.drop(list(X.columns[best_i[0]:best_i[1]]),axis=1)
+      bands.remove(best_i)
   except: # ValueError
       break
   """
@@ -67,14 +68,23 @@ while True:
   min_i.append(i[0])
   max_i.append(i[1])
   #"""
+xcs=DataFrame()
+for i,j in zip(x_train.index,x_train.std(axis=1, ddof=1)):
+    xcs[i]=[k/j for k in x_train.loc[i,]]
+xts=DataFrame()
+for i,j in zip(x_test.index,x_test.std(axis=1, ddof=1)):
+    xts[i]=[k/j for k in x_test.loc[i,]]
 print(best_r2cv)
 print(len(X.columns))
 print("Test : ",r2_score(y_test,pls.predict(x_test)))
 print("Train : ",r2_score(y_train,pls.predict(x_train)))
 coefs=[i[0] for i in pls.coef_]
-coefs.append((np.mean(y_train) - np.dot(np.mean(x_train),pls.coef_)))
-DataFrame({'C':coefs}).to_json("coefs_model_oil.json")
+coefs.append((np.mean(y_train) - np.dot(np.mean(xcs.T),pls.coef_)))
+DataFrame({'C':coefs}).to_excel("coefs_model_oil.xlsx")
 DataFrame(x_test).to_excel("test_Data_oil.xlsx")
+intercept=(np.mean(y_train) - np.dot(np.mean(xcs.T),pls.coef_))
+print((xts.T.loc[xts.T.index[0],]) @ pls.coef_ + intercept)
+print(pls.predict([x_test.loc[x_test.index[0],]]))
 """
 plot([i[0] for i in devise_bande(X,64)],[sqrt(i) for i in msecv],'--x')
 xlabel('Intervals')
