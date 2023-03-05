@@ -1,4 +1,4 @@
-from preproc_NIR import devise_bande, msc, pow_trans
+from preproc_NIR import devise_bande, msc, snv, pow_trans, prep_log
 from sklearn.preprocessing import normalize, StandardScaler
 from sklearn.model_selection import KFold,cross_val_predict, LeaveOneOut
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, max_error, r2_score, mean_absolute_error
@@ -10,9 +10,12 @@ from matplotlib.pyplot import plot, show, xlabel, ylabel, title
 from numpy import sqrt, mean
 import time
 import numpy as np
-db=read_excel("data-oil-2miroirs.xlsx")
+db=read_excel("data-oil-12+31janv.xlsx")
 X=db.drop(['Unnamed: 0','Y'],axis=1)
+wl=X.columns
+pond=[1/i for i in np.std(X,ddof=1,axis=1)]
 X=DataFrame(savgol_filter(X,3,1,1))
+#X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
 Y=db['Y']
 Y=[np.sqrt(i) for i in Y]
 """
@@ -43,7 +46,7 @@ while True:
         program_starts = time.time()
         while True:
           x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
-          pls=PLSRegression(n_components=23)
+          pls=PLSRegression()
           pls.fit(x_train,y_train)
           ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
           now = time.time()
@@ -68,22 +71,19 @@ while True:
   min_i.append(i[0])
   max_i.append(i[1])
   #"""
-xcs=DataFrame()
-for i,j in zip(x_train.index,x_train.std(axis=1, ddof=1)):
-    xcs[i]=[k/j for k in x_train.loc[i,]]
-xts=DataFrame()
-for i,j in zip(x_test.index,x_test.std(axis=1, ddof=1)):
-    xts[i]=[k/j for k in x_test.loc[i,]]
-print(best_r2cv)
-print(len(X.columns))
+print("CV : ",best_r2cv)
+print("Selected wl : ",len(X.columns))
 print("Test : ",r2_score(y_test,pls.predict(x_test)))
 print("Train : ",r2_score(y_train,pls.predict(x_train)))
 coefs=[i[0] for i in pls.coef_]
-coefs.append((np.mean(y_train) - np.dot(np.mean(xcs.T),pls.coef_)))
+coefs.append((np.mean(y_train) - np.dot(np.mean(x_train),pls.coef_)))
 DataFrame({'C':coefs}).to_excel("coefs_model_oil.xlsx")
+choozen_idx=DataFrame(x_train).columns
+choozen_wl=wl[choozen_idx]
+DataFrame({'choozen wavelengths index':choozen_idx,'choozen wavelengths values':choozen_wl}).to_excel("choozen_wavelengths.xlsx")
 DataFrame(x_test).to_excel("test_Data_oil.xlsx")
-intercept=(np.mean(y_train) - np.dot(np.mean(xcs.T),pls.coef_))
-print((xts.T.loc[xts.T.index[0],]) @ pls.coef_ + intercept)
+intercept=(np.mean(y_train) - np.dot(np.mean(x_train),pls.coef_))
+print((x_test.loc[x_test.index[0],]) @ pls.coef_ + intercept)
 print(pls.predict([x_test.loc[x_test.index[0],]]))
 """
 plot([i[0] for i in devise_bande(X,64)],[sqrt(i) for i in msecv],'--x')

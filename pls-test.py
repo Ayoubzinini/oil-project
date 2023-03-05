@@ -35,9 +35,11 @@ def ic_pr(x,y,model):
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
+X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
+X.columns=wl
+X=X[wl[choozen_idx]]
 Y=db['Y']
-Y=np.sqrt(Y)
-X=osc(X)
+Y=[np.sqrt(i) for i in Y]
 #X=DataFrame(detrend(DataFrame(detrend(DataFrame(savgol_filter(X,polyorder=1,window_length=5))))))
 """
 for i in X.columns:
@@ -54,11 +56,11 @@ while True:
   r2=[]
   RMSE=[]
   for i in range(1,31,1):
-    model=PLSRegression(n_components=i)
+    model=PLSRegression(scale=False,n_components=i)
     model.fit(x_train, y_train)
     r2.append(r2_score(model.predict(x_test),y_test))
     RMSE.append(mean_squared_error(model.predict(x_test),y_test))
-  model=PLSRegression(n_components=1+RMSE.index(min(RMSE)))
+  model=PLSRegression(scale=False,n_components=1+RMSE.index(min(RMSE)))
   model.fit(x_train, y_train)
   RMSECV=abs(np.mean(cross_val_score(PLSRegression(n_components=1+RMSE.index(min(RMSE))), x_train, y_train, scoring='neg_root_mean_squared_error', cv=LeaveOneOut())))
   R2CV=100*np.mean(cross_val_score(PLSRegression(n_components=1+RMSE.index(min(RMSE))), x_train, y_train, scoring='r2'))

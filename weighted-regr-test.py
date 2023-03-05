@@ -1,3 +1,5 @@
+from preproc_NIR import devise_bande, msc, snv, pow_trans, prep_log, choosen_wl_filter
+from scipy.signal import savgol_filter, detrend
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold,cross_val_predict, LeaveOneOut
 from sklearn.model_selection import GridSearchCV, train_test_split
@@ -15,7 +17,12 @@ rcParams['figure.figsize'] = (12, 8)
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
+wl=X.columns
+X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
+X.columns=wl
+X=choosen_wl_filter("choozen_wavelengths.xlsx",X)
 Y=db['Y']
+Y=[np.sqrt(i) for i in Y]
 def ic_pr(x,y,model):
   from numpy import mean,sqrt,array,std,transpose,matmul,linalg
   from sklearn.metrics import mean_squared_error
@@ -48,14 +55,15 @@ X=r.T.drop("one",axis=0)
 #78686
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
-i=2879
+i=0
 while True:
-  pc = PCA(X, ncomp=20, method='nipals')
+  pc = PCA(X, ncomp=15, method='nipals')
   x_train, x_test, y_train, y_test = train_test_split(DataFrame(pc.factors),Y,test_size=0.2,random_state=i)
+  pond=[1/i for i in np.std(x_train,ddof=1,axis=1)]
   income_groups=[y_train,y_test]
   s,p=f_oneway(*income_groups)
   wregr=LinearRegression()
-  wregr.fit(x_train, y_train, np.ones(x_train.shape[0])/np.mean(x_train,axis=1)**2)
+  wregr.fit(x_train, y_train)#np.ones(x_train.shape[0])/np.mean(x_train,axis=1)**2
   Y_cv = cross_val_predict(wregr, x_train, y_train, cv=LeaveOneOut())
   score_cv = r2_score(y_train, Y_cv)
   mse_cv = mean_squared_error(y_train, Y_cv)
