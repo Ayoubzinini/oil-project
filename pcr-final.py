@@ -1,3 +1,4 @@
+from preproc_NIR import devise_bande, msc, pow_trans, prep_log
 from sklearn.model_selection import KFold,cross_val_predict, LeaveOneOut
 from sklearn.metrics import mean_squared_error, mean_squared_log_error, max_error, r2_score, mean_absolute_error
 from sklearn.linear_model import LinearRegression
@@ -15,8 +16,9 @@ from statsmodels.multivariate.pca import PCA
 file_name="data-oil-2miroirs"
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
-#X=DataFrame(savgol_filter(X,9,1,1))
+X=DataFrame(savgol_filter(msc(X.to_numpy()),3,1,1))
 Y=db['Y']
+Y=[np.sqrt(i) for i in Y]
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset=[],[],[],[],[],[]
 r2=[]
@@ -30,7 +32,7 @@ while True:
     model.fit(x_train, y_train)
     r2.append(r2_score(model.predict(x_test),y_test))
     RMSE.append(mean_squared_error(model.predict(x_test),y_test))
-  pc = PCA(X, ncomp=1+RMSE.index(min(RMSE)), method='nipals')
+  pc = PCA(X, ncomp=29, method='nipals')#1+RMSE.index(min(RMSE))
   x_train, x_test, y_train, y_test = train_test_split(DataFrame(pc.factors),Y,test_size=0.2,random_state=j)
   model=LinearRegression()
   model.fit(x_train, y_train)
@@ -48,6 +50,8 @@ while True:
     rmsecv.append(RMSECV)
     rmset.append(RMSEtest)
     break
+  else:
+    j+=1
 res=DataFrame({rescols[0]:r2c,rescols[1]:r2cv,rescols[2]:r2t,rescols[3]:rmsec,rescols[4]:rmsecv,rescols[5]:rmset})
 print(res)
 w,p = shapiro([i-j for i,j in zip(y_test,model.predict(x_test))])

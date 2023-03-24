@@ -10,12 +10,12 @@ from matplotlib.pyplot import plot, show, xlabel, ylabel, title
 from numpy import sqrt, mean
 import time
 import numpy as np
-db=read_excel("data-oil-12+31janv.xlsx")
+db=read_excel("data-oil-2miroirs.xlsx")
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 wl=X.columns
 pond=[1/i for i in np.std(X,ddof=1,axis=1)]
-X=DataFrame(savgol_filter(X,3,1,1))
-#X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
+#X=DataFrame(savgol_filter(X,3,1,1))
+X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
 Y=db['Y']
 Y=[np.sqrt(i) for i in Y]
 """

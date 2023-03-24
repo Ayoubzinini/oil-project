@@ -1,34 +1,31 @@
+from preproc_NIR import devise_bande, msc, snv, pow_trans, prep_log, simple_moving_average
 from sklearn.svm import SVR
 from sklearn.model_selection import cross_val_predict, LeaveOneOut
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import Normalizer, StandardScaler
 #from matplotlib.pyplot import show, bar, axhline, rcParams
-from pandas import read_excel
-from pandas import DataFrame, concat
+from pandas import read_excel, DataFrame, concat
 import numpy as np
 from scipy.stats import f_oneway
-from pca import pca
+from scipy.signal import savgol_filter
+from statsmodels.multivariate.pca import PCA
 #rcParams['figure.figsize'] = (12, 8)
-file_name=input('File Name : ')
+file_name="data-oil-2miroirs"
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
+scl=Normalizer()
+scl.fit(X)
+X=DataFrame(scl.transform(X))
 Y=db['Y']
-def simple_moving_average(signal, window=5):
-    return np.convolve(signal, np.ones(window)/window, mode='same')
-r=DataFrame({"one":np.ones(X.shape[1])})
-for i in X.index:
-  r=concat([r,DataFrame({str(i):simple_moving_average(X.loc[i,], window=5)})],axis=1)
-X=r.T.drop("one",axis=0)
-#pond 1/m : 9897,11583,38385,44839
-#pond [0.001]*23 : 37, 1058, 1195, 2370, 3222, 3286, 3410, 4044
-i=0 #last stop poly : 44839 
+#Y=pow_trans(Y, 0.5)
+i=0
 while True:
-  model = pca(n_components=20)
-  results = model.fit_transform(X)
-  x_train, x_test, y_train, y_test = train_test_split(results['PC'],Y,test_size=0.2,random_state=i)
+  pc = PCA(X, ncomp=20, method='nipals')
+  x_train, x_test, y_train, y_test = train_test_split(DataFrame(pc.factors),Y,test_size=0.2,random_state=i)
   income_groups=[y_train,y_test]
   s,p=f_oneway(*income_groups)
-  svmregr=SVR(kernel = 'linear')
+  svmregr=SVR(C=10, epsilon=0.1,gamma=0.0001,kernel='rbf')
   svmregr.fit(x_train, y_train,[0.001]*len(y_train))#, np.ones(x_train.shape[0])/np.mean(x_train,axis=1)**2
   Y_cv = cross_val_predict(svmregr, x_train, y_train, cv=LeaveOneOut())
   score_cv = r2_score(y_train, Y_cv)
@@ -37,7 +34,7 @@ while True:
   mse_test=mean_squared_error(y_test, svmregr.predict(x_test))
   score_test=r2_score(y_test,svmregr.predict(x_test))
   score_train=r2_score(y_train,svmregr.predict(x_train))
-  if p<0.05 and score_test>0 and score_cv>0 and score_train>0.98:
+  if score_test>0 and score_cv>0 and score_train>0:
     break
   i=i+1
 print('R2 CV (SVM): ',100 * score_cv," %")
