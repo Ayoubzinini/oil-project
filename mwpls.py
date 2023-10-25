@@ -6,10 +6,11 @@ from sklearn.cross_decomposition import PLSRegression
 from sklearn.model_selection import train_test_split, cross_val_score
 from scipy.signal import savgol_filter, detrend
 from pandas import read_excel ,DataFrame
-from matplotlib.pyplot import plot, show, xlabel, ylabel, title
+from matplotlib.pyplot import plot, show, xlabel, ylabel, title, hist
 from numpy import sqrt, mean
 import time
 import numpy as np
+import pickle
 db=read_excel("data-oil-2miroirs.xlsx")
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 wl=X.columns
@@ -27,7 +28,7 @@ max_i=[]
 j=0
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
-  pls=PLSRegression()
+  pls=PLSRegression(n_components=13)
   pls.fit(x_train,y_train)
   ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
   if r2_score(y_train,ycv)>0 and r2_score(y_test,pls.predict(x_test))>0:
@@ -46,7 +47,7 @@ while True:
         program_starts = time.time()
         while True:
           x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
-          pls=PLSRegression()
+          pls=PLSRegression(n_components=13)
           pls.fit(x_train,y_train)
           ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
           now = time.time()
@@ -75,6 +76,7 @@ print("CV : ",best_r2cv)
 print("Selected wl : ",len(X.columns))
 print("Test : ",r2_score(y_test,pls.predict(x_test)))
 print("Train : ",r2_score(y_train,pls.predict(x_train)))
+pickle.dump(model, open("mwpls-model-oil.pkl", "wb"))
 coefs=[i[0] for i in pls.coef_]
 coefs.append((np.mean(y_train) - np.dot(np.mean(x_train),pls.coef_)))
 DataFrame({'C':coefs}).to_excel("coefs_model_oil.xlsx")
