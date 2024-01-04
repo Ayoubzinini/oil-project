@@ -11,40 +11,13 @@ import numpy as np
 from scipy.stats import f_oneway
 from scipy.signal import savgol_filter, detrend
 from preproc_NIR import osc, msc, snv, simple_moving_average
-def ic_pr(x,y,model):
-  from numpy import mean,sqrt,array,std,transpose,matmul,linalg
-  from sklearn.metrics import mean_squared_error
-  from scipy.stats import t
-  n=x.shape[0]
-  ich,ici=[],[]
-  for i,j in zip(x.index,y):
-      xh=x.loc[i,:]
-      xh=[list(xh)]
-      pr=model.predict(xh)[0]
-      mse=mean_squared_error([j],[pr])
-      xh=x.loc[i,:]
-      xm=mean(xh)
-      stderr=sqrt(abs(mse*matmul(matmul(transpose(xh),linalg.inv(matmul(transpose(x),x))),xh)))
-      #"""
-      T=t(df=n-2).ppf(0.975)
-      a=T*stderr
-      ici.append(pr-a)
-      ich.append(pr+a)
-      #"""
-  return DataFrame({'ICI':ici,'ICH':ich})
 file_name=input('File Name : ')
 db=read_excel(file_name+'.xlsx')
 X=db.drop([db.columns[0],'Y'],axis=1)
 X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
-X.columns=wl
-X=X[wl[choozen_idx]]
+choozen_idx=read_excel("choozen_wavelengths.xlsx")["choozen wavelengths index"]
+X=X[choozen_idx]
 Y=db['Y']
-Y=[np.sqrt(i) for i in Y]
-#X=DataFrame(detrend(DataFrame(detrend(DataFrame(savgol_filter(X,polyorder=1,window_length=5))))))
-"""
-for i in X.columns:
-    X[i]=X[i]*np.ones(X.shape[0])/np.mean(X,axis=1)**2
-"""
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]
 #111,237👌
@@ -84,7 +57,6 @@ while True:
       #"""
       break
   j=j+1
-print(ic_pr(x_test, y_test, model))#.to_excel('icpr.xlsx')
 print("pc nbr : ",1+RMSE.index(min(RMSE)))
 print('Best random stat : ',j)
 print(DataFrame([R2test,RMSEtest,R2train,RMSEtrain,RMSECV,R2CV],index=["R2test","RMSEtest","R2train","RMSEtrain","RMSECV","R2CV"],columns=["values"]))
