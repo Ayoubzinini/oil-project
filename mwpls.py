@@ -28,7 +28,7 @@ max_i=[]
 j=0
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
-  pls=PLSRegression()#n_components=13
+  pls=PLSRegression(n_components=13)#
   pls.fit(x_train,y_train)
   ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
   if r2_score(y_train,ycv)>0 and r2_score(y_test,pls.predict(x_test))>0:
@@ -47,7 +47,7 @@ while True:
         program_starts = time.time()
         while True:
           x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
-          pls=PLSRegression()#n_components=13
+          pls=PLSRegression(n_components=13)#
           pls.fit(x_train,y_train)
           ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
           now = time.time()
