@@ -11,7 +11,7 @@ from numpy import sqrt, mean
 import time
 import numpy as np
 import pickle
-db=read_excel("data-oil-12+31janv.xlsx")#data-oil-2miroirs
+db=read_excel("data-oil-2miroirs.xlsx")#data-oil-12+31janv 
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 wl=X.columns
 pond=[1/i for i in np.std(X,ddof=1,axis=1)]

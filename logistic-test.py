@@ -23,7 +23,9 @@ y = labenc.fit_transform(y)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Initialize Logistic Regression model
-model = LogisticRegression()
+best_params={'C': 0.001,'dual': False,'fit_intercept': True,'penalty': 'l2','solver': 'newton-cg'}
+model = LogisticRegression(**best_params)
+
 
 # Train the model on the training set
 model.fit(X_train, y_train)
@@ -32,7 +34,7 @@ model.fit(X_train, y_train)
 y_train_pred = model.predict(X_train)
 
 # Cross-validation scores
-cv_scores = cross_val_score(model, X_train, y_train, cv=4)
+cv_scores = cross_val_score(model, X_train, y_train, cv=3)
 
 # Predictions on test set
 y_test_pred = model.predict(X_test)
@@ -42,7 +44,7 @@ r2_train = r2_score(y_train, y_train_pred)
 rmse_train = np.sqrt(mean_squared_error(y_train, y_train_pred))
 
 r2_cv = np.mean(cv_scores)
-rmse_cv = np.mean(np.sqrt(-cross_val_score(model, X_train, y_train, cv=4, scoring='neg_mean_squared_error')))
+rmse_cv = np.mean(np.sqrt(-cross_val_score(model, X_train, y_train, cv=3, scoring='neg_mean_squared_error')))
 
 r2_test = r2_score(y_test, y_test_pred)
 rmse_test = np.sqrt(mean_squared_error(y_test, y_test_pred))
