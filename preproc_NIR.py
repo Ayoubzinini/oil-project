@@ -105,3 +105,24 @@ def pow_trans(y,power_t):
     for i in y:
       trans_y.append((i**(power_t-1))/(power_t*gm(y)**(power_t-1)))
   return trans_y
+def ic_pr(x,y,model):
+  from numpy import mean,sqrt,array,std,transpose,matmul,linalg
+  from sklearn.metrics import mean_squared_error
+  from scipy.stats import t
+  n=x.shape[0]
+  ich,ici=[],[]
+  for i,j in zip(x.index,y):
+      xh=x.loc[i,:]
+      xh=[list(xh)]
+      pr=model.predict(xh)[0]
+      mse=mean_squared_error([j],[pr])
+      xh=x.loc[i,:]
+      xm=mean(xh)
+      stderr=sqrt(abs(mse*matmul(matmul(transpose(xh),linalg.inv(matmul(transpose(x),x))),xh)))
+      #"""
+      T=t(df=n-2).ppf(0.975)
+      a=T*stderr
+      ici.append(pr-a)
+      ich.append(pr+a)
+      #"""
+  return DataFrame({'ICI':ici,'ICH':ich})
