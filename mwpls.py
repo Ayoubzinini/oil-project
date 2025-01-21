@@ -11,12 +11,13 @@ from numpy import sqrt, mean
 import time
 import numpy as np
 import pickle
-db=read_excel("data-oil-2miroirs.xlsx")#data-oil-12+31janv 
+db=read_excel("C:/Users/ayoub/Downloads/OneDrive_1_11-11-2024/data-oil-10-24-final.xlsx")#data-oil-12+31janv 
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 wl=X.columns
 pond=[1/i for i in np.std(X,ddof=1,axis=1)]
 #X=DataFrame(savgol_filter(X,3,1,1))
-X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
+#X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
+X=prep_log(X)
 Y=db['Y']
 #Y=[np.sqrt(i) for i in Y]
 """
@@ -38,7 +39,7 @@ best_msecv=mean_squared_error(y_train,ycv)
 best_r2cv=r2_score(y_train,ycv)
 best_r2c=r2_score(y_train,pls.predict(x_train))
 best_r2t=r2_score(y_test,pls.predict(x_test))
-bands=devise_bande(X,69)
+bands=devise_bande(X,69)#69
 while True:
   try:
       for i in bands:
@@ -47,7 +48,7 @@ while True:
         program_starts = time.time()
         while True:
           x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
-          pls=PLSRegression(n_components=13)#
+          pls=PLSRegression(n_components=13)# 
           pls.fit(x_train,y_train)
           ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
           now = time.time()

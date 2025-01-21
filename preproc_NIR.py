@@ -57,7 +57,7 @@ def prep_log(X):
   from pandas import DataFrame
   lg_X=DataFrame()
   for i in X.columns:
-    lg_X[i]=[log10(1/j) for j in X[i]]
+    lg_X[i]=[-log10(1/j) for j in X[i]]
   return lg_X
 def devise_bande(X,n_intervals):
   Test=int(len(X.columns)/n_intervals)-(len(X.columns)/n_intervals)
@@ -91,38 +91,108 @@ def var_sel(X,min_max_intervals_list):
         selected.append(j)
   return X[selected]
 def pow_trans(y,power_t):
+  """
+  This function transforms the training output of your model to reduce the noise of destribution and get a better training quality if it works well
+  """
   from numpy import log
+  #defining geometric mean function
   def gm(l):
     result=1
     for i in l:
       result *= i
-    return result**1/len(l)
-  trans_y=[]
+    return result**(1/len(l))
+  trans_y=[] #empty transformed vector
   if power_t==0:
     for i in y:
-      trans_y.append(gm(y)*log(i))
+      trans_y.append(gm(y)*log(i)) #appendenig the transformed elements to the vector if power coefficent is null
   else:
     for i in y:
-      trans_y.append((i**(power_t-1))/(power_t*gm(y)**(power_t-1)))
-  return trans_y
-def ic_pr(x,y,model):
+      trans_y.append((i**(power_t-1))/(power_t*gm(y)**(power_t-1)))  #appendenig the transformed elements to the vector if power coefficent not null
+  return trans_y #full transformed vector
+def ic_pr(x,y,model,risk=0.05):
+  """"
+  This function returns the prediction confident intervals of model's prediction
+  You'll need : X input, Y output, model and risk of decision (5% by default) as arguments
+  """
   from numpy import mean,sqrt,array,std,transpose,matmul,linalg
   from sklearn.metrics import mean_squared_error
   from scipy.stats import t
   n=x.shape[0]
-  ich,ici=[],[]
+  ich,ici=[],[] #ici : the down boundary of confident interval ; ich : the upper boundary of confident interval
   for i,j in zip(x.index,y):
-      xh=x.loc[i,:]
+      xh=x.loc[i,:] #sample selection
       xh=[list(xh)]
-      pr=model.predict(xh)[0]
-      mse=mean_squared_error([j],[pr])
+      pr=model.predict(xh)[0] #get prediction
+      mse=mean_squared_error([j],[pr]) #get mean squared error
       xh=x.loc[i,:]
-      xm=mean(xh)
-      stderr=sqrt(abs(mse*matmul(matmul(transpose(xh),linalg.inv(matmul(transpose(x),x))),xh)))
-      #"""
-      T=t(df=n-2).ppf(0.975)
-      a=T*stderr
-      ici.append(pr-a)
-      ich.append(pr+a)
-      #"""
+      stderr=sqrt(abs(mse*matmul(matmul(transpose(xh),linalg.inv(matmul(transpose(x),x))),xh))) #get standard error
+      T=t(df=n-2).ppf(1-risk/2) #get student quantile that presents risk of decision
+      a=T*stderr #get interval semi amplitude
+      ici.append(pr-a) #get down boundary values
+      ich.append(pr+a) #get upper boundary values
   return DataFrame({'ICI':ici,'ICH':ich})
+def continuum_removal(wavelength, spectrum, window_size=10):
+    """
+    Continuum removal preprocessing for spectral data.
+    
+    Parameters:
+    - wavelength: 1D array-like, the wavelength values.
+    - spectrum: 1D array-like, the spectral intensity values.
+    - window_size: int, the size of the window for local linear regression.
+    
+    Returns:
+    - continuum_removed: 1D array, the continuum-removed spectrum.
+    """
+    import numpy as np
+    from sklearn.linear_model import LinearRegression
+    continuum_removed = np.zeros_like(spectrum)
+    for i in range(len(spectrum)):
+        # Define local window
+        start = max(0, i - window_size // 2)
+        end = min(len(spectrum), i + window_size // 2)
+        
+        # Fit linear regression
+        lr = LinearRegression()
+        lr.fit(wavelength[start:end].reshape(-1, 1), spectrum[start:end])
+        
+        # Predict continuum value
+        continuum = lr.predict(wavelength[i].reshape(-1, 1))
+        
+        # Remove continuum
+        continuum_removed[i] = spectrum[i] - continuum
+        
+    return continuum_removed
+def Hotellings_T2(data,n_components=2):
+    import numpy as np
+    import pandas as pd
+    from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
+    from scipy.stats import f
+    
+    
+    # Step 1: Standardize the data
+    scaler = StandardScaler()
+    data_scaled = scaler.fit_transform(data)
+    
+    # Step 2: Perform PCA
+    pca = PCA()
+    data_pca = pca.fit_transform(data_scaled)
+    
+    # Step 3: Select the number of PCs (e.g., 2 PCs)
+    pca_scores = data_pca[:, :n_components]
+    cov_matrix = np.cov(pca_scores, rowvar=False)
+    
+    # Step 4: Compute T² statistic for each sample
+    inv_cov_matrix = np.linalg.inv(cov_matrix)
+    t2_stats = np.array([z.T @ inv_cov_matrix @ z for z in pca_scores])
+    
+    # Calculate threshold
+    n_samples = data.shape[0]
+    alpha = 0.05
+    critical_value = f.ppf(1 - alpha, dfn=n_components, dfd=n_samples - n_components)
+    threshold = (n_components * (n_samples - 1)) / (n_samples - n_components) * critical_value
+    
+    # Identify outliers
+    outliers = np.where(t2_stats > threshold)[0]
+    
+    return outliers
