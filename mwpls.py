@@ -15,11 +15,12 @@ db=read_excel("C:/Users/ayoub/Downloads/OneDrive_1_11-11-2024/data-oil-10-24-fin
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 wl=X.columns
 #pond=[1/i for i in np.std(X,ddof=1,axis=1)]
-#X=prep_log(X)
+X=prep_log(X)
 #X=DataFrame(savgol_filter(X,3,1,1))
 #X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy()),),3,1,1))
 Y=db['Y']
 #Y=[np.sqrt(i) for i in Y]
+X.columns=wl
 """
 msecv=[]
 r2cv=[]
