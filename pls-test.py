@@ -10,13 +10,14 @@ from pandas import DataFrame, concat
 import numpy as np
 from scipy.stats import f_oneway
 from scipy.signal import savgol_filter, detrend
-from preproc_NIR import osc, msc, snv, simple_moving_average
-file_name=input('File Name : ')
-db=read_excel(file_name+'.xlsx')
+from preproc_NIR import osc, msc, snv, simple_moving_average, prep_log, snv
+#file_name=input('File Name : ')
+db=read_excel("C:/Users/ayoub/Downloads/OneDrive_1_11-11-2024/data-oil-10-24-final.xlsx")#file_name+'.xlsx'
 X=db.drop([db.columns[0],'Y'],axis=1)
-X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
-choozen_idx=read_excel("choozen_wavelengths.xlsx")["choozen wavelengths index"]
-X=X[choozen_idx]
+X=DataFrame(detrend(X))
+#X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,2,2))
+#choozen_idx=read_excel("choozen_wavelengths.xlsx")["choozen wavelengths index"]
+#X=X[choozen_idx]
 Y=db['Y']
 rescols=["r2c","r2cv","r2t","rmsec","rmsecv","rmset","rds"]
 r2c,r2cv,r2t,rmsec,rmsecv,rmset,rds=[],[],[],[],[],[],[]

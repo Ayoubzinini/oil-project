@@ -14,10 +14,10 @@ import pickle
 db=read_excel("C:/Users/ayoub/Downloads/OneDrive_1_11-11-2024/data-oil-10-24-final.xlsx")#data-oil-12+31janv 
 X=db.drop(['Unnamed: 0','Y'],axis=1)
 wl=X.columns
-pond=[1/i for i in np.std(X,ddof=1,axis=1)]
+#pond=[1/i for i in np.std(X,ddof=1,axis=1)]
+#X=prep_log(X)
 #X=DataFrame(savgol_filter(X,3,1,1))
-#X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy())),3,1,1))
-X=prep_log(X)
+#X=DataFrame(savgol_filter(DataFrame(msc(X.to_numpy()),),3,1,1))
 Y=db['Y']
 #Y=[np.sqrt(i) for i in Y]
 """
@@ -29,7 +29,7 @@ max_i=[]
 j=0
 while True:
   x_train, x_test, y_train, y_test = train_test_split(X,Y,test_size=0.2,random_state=j)
-  pls=PLSRegression(n_components=13)#
+  pls=PLSRegression(scale=False,n_components=13)#
   pls.fit(x_train,y_train)
   ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
   if r2_score(y_train,ycv)>0 and r2_score(y_test,pls.predict(x_test))>0:
@@ -48,7 +48,7 @@ while True:
         program_starts = time.time()
         while True:
           x_train, x_test, y_train, y_test = train_test_split(inp,Y,test_size=0.2,random_state=j)
-          pls=PLSRegression(n_components=13)# 
+          pls=PLSRegression(scale=False,n_components=13)# 
           pls.fit(x_train,y_train)
           ycv = cross_val_predict(pls, x_train, y_train, cv=LeaveOneOut())
           now = time.time()
@@ -82,8 +82,7 @@ coefs=[i[0] for i in pls.coef_]
 coefs.append((np.mean(y_train) - np.dot(np.mean(x_train),pls.coef_)))
 DataFrame({'C':coefs}).to_excel("coefs_model_oil.xlsx")
 choozen_idx=DataFrame(x_train).columns
-choozen_wl=wl[choozen_idx]
-DataFrame({'choozen wavelengths index':choozen_idx,'choozen wavelengths values':choozen_wl}).to_excel("choozen_wavelengths.xlsx")
+DataFrame({'choozen wavelengths index':[list(wl).index(i) for i in choozen_idx],'choozen wavelengths values':choozen_idx}).to_excel("choozen_wavelengths.xlsx")
 DataFrame(x_test).to_excel("test_Data_oil.xlsx")
 intercept=(np.mean(y_train) - np.dot(np.mean(x_train),pls.coef_))
 print((x_test.loc[x_test.index[0],]) @ pls.coef_ + intercept)
